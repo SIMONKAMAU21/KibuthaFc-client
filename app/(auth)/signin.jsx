@@ -11,33 +11,11 @@ const Signin = () => {
   // const { setUser, setIsLogged } = useGlobalContext();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    password: "",
+    name: "simon kamau",
+    password: "demo123",
   });
   const {mutateAsync : mutateLoginUser} = useLoginUser()
 
-  // const submit = async () => {
-  //   if (form.email === "" || form.password === "") {
-  //     Alert.alert("Error", "Please fill in all fields");
-  //     return;
-  //   }
-
-  //   setLoading(true);
-
-  //   try {
-  //     await signIn(form.email, form.password);
-  //     const result = await getCurrentUser();
-  //     setUser(result);
-  //     setIsLogged(true);
-
-  //     ToastAndroid.show('successfully logged in ',ToastAndroid.SHORT)
-  //     router.replace("/Home");
-  //   } catch (error) {
-  //     Alert.alert("Error", error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 const handleLogin =(data)=>{
   const payload={
     name:form.name,

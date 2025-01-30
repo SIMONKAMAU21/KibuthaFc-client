@@ -8,7 +8,8 @@ export const useCreateAccount = () => {
       const response = await httpV1({
         method: "POST",
         url: "users/add",
-        data: payload
+        data: payload,
+       
       });
       return response.data
     }
@@ -39,24 +40,45 @@ export const useGetAllUsers = () =>{
   })
 }
 
-export const useUpdateUser = () =>{
-  const queryClient = useQueryClient(); // ✅ Get QueryClient instance
+
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
 
   return useMutation(
-    async(payload) =>{
-      const response = await httpV1({
-        method:"PUT",
-        url:`user/${payload.id}`,
-        data:payload
+    async (payload) => {
+      const formData = new FormData();
+      
+      // Append all text fields
+      formData.append("name", payload.name);
+      formData.append("email", payload.email);
+      formData.append("phone", payload.phone);
+      formData.append("role", payload.role);
 
+      // Append image file if it exists
+      if (payload.photo) {
+        formData.append("photo", {
+          uri: payload.photo,
+          name: `profile_${Date.now()}.jpg`,
+          type: "image/jpeg",
+        });
+      }
+
+      const response = await httpV1({
+        method: "PUT",
+        url: `user/${payload.id}`,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      return response.data
+
+      return response.data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries('users'); // ✅ Refresh users list after update
-      }
+        queryClient.invalidateQueries("users"); // ✅ Refresh users list after update
+      },
     }
-  )
-}
+  );
+};
 

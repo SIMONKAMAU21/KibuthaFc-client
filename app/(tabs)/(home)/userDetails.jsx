@@ -4,6 +4,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -12,10 +13,12 @@ import CustomButton from '../../../components/customButton';
 import Inputs from '../../../components/customInput';
 import { useUpdateUser } from '../../(auth)/data';
 import { Dropdown } from '../../../components/dropDown';
+import * as ImagePicker from "expo-image-picker";
 
 const UserDetails = () => {
   const { user } = useLocalSearchParams();
   const parsedUser = user ? JSON.parse(user) : {};
+  const [form, setForm] = useState({})
 
   const [formData, setFormData] = useState({
     name: parsedUser?.name,
@@ -25,36 +28,83 @@ const UserDetails = () => {
     role: parsedUser?.role,
   });
   const updateUserMutation = useUpdateUser()
+  // Function to select an image
 
-  const handleUpdate = () => {
-    updateUserMutation.mutate(formData, {
-      onSuccess: (data) => {
-        console.log("user updated succefully", data)
-        setFormData((prev) => ({
-          ...prev,
-          ...data
-        }))
-        Toast.show({
-          type: "success",
-          text1: "success",
-          text2: data.message || "user updated"
-        })
-        router.push('/(home)')
-      },
-      onError: (error) => {
-        console.log("error", error)
-      }
-    })
-    console.log('Updated User:', formData);
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setForm({ ...form, photo: result.assets[0].uri });
+    }
   };
 
+  // const handleUpdate = () => {
+  //   updateUserMutation.mutate(formData, {
+  //     onSuccess: (data) => {
+  //       console.log("user updated succefully", data)
+  //       setFormData((prev) => ({
+  //         ...prev,
+  //         ...data
+  //       }))
+  //       Toast.show({
+  //         type: "success",
+  //         text1: "success",
+  //         text2: data.message || "user updated"
+  //       })
+  //       router.push('/(home)')
+  //     },
+  //     onError: (error) => {
+  //       console.log("error", error)
+  //     }
+  //   })
+  //   console.log('Updated User:', formData);
+  // };
+  const handleUpdate = () => {
+    const updatePayload = { ...formData };
+  
+    // Include the selected image if available
+    if (form.photo) {
+      updatePayload.photo = form.photo;
+    }
+  
+    updateUserMutation.mutate(updatePayload, {
+      onSuccess: (data) => {
+        console.log("User updated successfully", data);
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: data.message || "User updated",
+        });
+        router.push("/(home)");
+      },
+      onError: (error) => {
+        console.error("Error updating user", error);
+      },
+    });
+  };
+  
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.card}>
-        <Image
-          source={{ uri: parsedUser?.photoUrl }}
+        {form.photo && form.photo ? (
+          <Image source={{ uri: form.photo }} style={styles.profileImage}
+          />
+        ) : <Image
+          source={{ uri: parsedUser?.photo || parsedUser.photoUrl || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwdIVSqaMsmZyDbr9mDPk06Nss404fosHjLg&s' }}
           style={styles.profileImage}
-        />
+        />}
+
+        {/* Image Picker Button */}
+        <TouchableOpacity onPress={pickImage} style={{ marginTop: 20, padding: 10, backgroundColor: "#1DB954", borderRadius: 5 }}>
+          <Text style={{ color: "white", textAlign: "center" }}>Upload Profile Picture</Text>
+        </TouchableOpacity>
+
         <Text style={styles.title}>Update User Details</Text>
         {/* <Text style={styles.title}>{formData?.id}</Text> */}
 
@@ -94,7 +144,7 @@ const UserDetails = () => {
           ]}
           width="100%"
           placeholder="Select Role"
-          onValueChange={(option) => setFormData({ ...formData, role:option?.value })} // ✅ Update role state
+          onValueChange={(option) => setFormData({ ...formData, role: option?.value })} // ✅ Update role state
           containerStyle={{
             backgroundColor: "#202C33",
             width: "100%",
@@ -130,9 +180,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignSelf: 'center',
     marginBottom: 20,
   },

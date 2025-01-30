@@ -17,7 +17,7 @@ const UserDisplay = ({ data }) => {
           params: { user: JSON.stringify(user) },
         });
       };
-      
+      console.log('data', data)
   return (
     <View>
       <FlatList
@@ -30,7 +30,7 @@ const UserDisplay = ({ data }) => {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.updateText}>{item.name}</Text>
               <Image
-                source={{ uri: item?.photoUrl }}
+                source={{ uri: item.photo || item.photoUrl || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}}
                 style={{
                   width: 40,
                   height: 40,
