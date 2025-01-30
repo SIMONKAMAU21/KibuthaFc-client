@@ -68,7 +68,7 @@ export const Dropdown = ({
           activeOpacity={1}
           onPress={toggleDropdown}
           style={{
-            // backgroundColor: '#f3f3f4',
+            backgroundColor: '#E8E1ED',
             borderWidth: 0,
             padding: 12,
             borderRadius: 8,
@@ -101,7 +101,7 @@ export const Dropdown = ({
               style={{
                 fontFamily: 'Poppins',
                 fontSize: 14,
-                color: '#333',
+                color: 'white',
                 opacity: 0.3,
               }}>
               {placeholder}

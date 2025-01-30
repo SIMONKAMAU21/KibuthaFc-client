@@ -128,12 +128,7 @@ const UserDetails = () => {
           placeholder="Phone"
           keyboardType="phone-pad"
         />
-        {/* <Inputs
-          // style={styles.input}
-          value={formData.role}
-          onChangeText={(text) => setFormData({ ...formData, role: text })}
-          placeholder="Role"
-        /> */}
+       
         <Dropdown
           label=""
           name="Role"
@@ -143,14 +138,15 @@ const UserDetails = () => {
             { label: 'Fun', value: "fun" }
           ]}
           width="100%"
-          placeholder="Select Role"
-          onValueChange={(option) => setFormData({ ...formData, role: option?.value })} // ✅ Update role state
+          placeholder={formData.role}
+          onValueChange={(option) => setFormData({ ...formData, role:option?.value })} 
           containerStyle={{
-            backgroundColor: "#202C33",
+            backgroundColor: "#1c1a18",
             width: "100%",
             position: "absolute",
+            marginTop:20,
             borderWidth: 1,
-            borderColor: "red",
+            borderColor: "#ccc",
             color: "white",
           }}
         />
