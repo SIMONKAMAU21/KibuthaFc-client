@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
+import placeholder from '../../assets/icons/placeholder.jpg'
 
 const UserDisplay = ({ data }) => {
 

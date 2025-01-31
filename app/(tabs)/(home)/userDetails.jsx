@@ -2,23 +2,46 @@ import React, { useState } from 'react';
 import {
   Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import CustomButton from '../../../components/customButton';
 import Inputs from '../../../components/customInput';
 import { useUpdateUser } from '../../(auth)/data';
 import { Dropdown } from '../../../components/dropDown';
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+
+const pickImage = async () => {
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [4, 4],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    const fileInfo = await FileSystem.getInfoAsync(result.assets[0].uri);
+
+    if (fileInfo.size > 10 * 1024 * 1024) { // 10MB limit
+      alert("File size too large. Please upload an image smaller than 10MB.");
+      return;
+    }
+
+    setForm({ ...form, photo: result.assets[0].uri });
+  }
+};
 
 const UserDetails = () => {
   const { user } = useLocalSearchParams();
   const parsedUser = user ? JSON.parse(user) : {};
   const [form, setForm] = useState({})
+  const [submiting, setSubmiting] = useState(false)
 
   const [formData, setFormData] = useState({
     name: parsedUser?.name,
@@ -37,13 +60,19 @@ const UserDetails = () => {
       aspect: [4, 4],
       quality: 1,
     });
-
+  
     if (!result.canceled) {
+      const fileInfo = await FileSystem.getInfoAsync(result.assets[0].uri);
+  
+      if (fileInfo.size > 10 * 1024 * 1024) { // 10MB limit
+        alert("File size too large. Please upload an image smaller than 10MB.");
+        return;
+      }
+  
       setForm({ ...form, photo: result.assets[0].uri });
     }
   };
 
-  // const handleUpdate = () => {
   //   updateUserMutation.mutate(formData, {
   //     onSuccess: (data) => {
   //       console.log("user updated succefully", data)
@@ -65,38 +94,51 @@ const UserDetails = () => {
   //   console.log('Updated User:', formData);
   // };
   const handleUpdate = () => {
-    const updatePayload = { ...formData };
+    setSubmiting(true); // Ensure updating state is set before the mutation starts
   
-    // Include the selected image if available
-    if (form.photo) {
-      updatePayload.photo = form.photo;
+    try {
+      const updatePayload = { ...formData };
+  
+      // Include the selected image if available
+      if (form.photo) {
+        updatePayload.photo = form.photo;
+      }
+  
+      
+      updateUserMutation.mutate(updatePayload, {
+        onSuccess: (data) => {
+          console.log("User updated successfully", data);
+          Toast.show({
+            type: "success",
+            text1: "Success",
+            text2: data.message || "User updated",
+          });
+          setSubmiting(false); // Reset the state after success
+          router.push("/(home)");
+        },
+        onError: (error) => {
+          console.error("Error updating user", error);
+          setSubmiting(false); // Reset the state if there's an error
+        },
+      });
+    } catch (error) {
+      console.log('error', error);
+      setSubmiting(false); // Reset the state in case of an exception
     }
-  
-    updateUserMutation.mutate(updatePayload, {
-      onSuccess: (data) => {
-        console.log("User updated successfully", data);
-        Toast.show({
-          type: "success",
-          text1: "Success",
-          text2: data.message || "User updated",
-        });
-        router.push("/(home)");
-      },
-      onError: (error) => {
-        console.error("Error updating user", error);
-      },
-    });
   };
+  
   
   
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView>
       <View style={styles.card}>
+      <Text style={styles.title}>{parsedUser.photo}</Text>
         {form.photo && form.photo ? (
           <Image source={{ uri: form.photo }} style={styles.profileImage}
           />
         ) : <Image
-          source={{ uri: parsedUser?.photo || parsedUser.photoUrl || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwdIVSqaMsmZyDbr9mDPk06Nss404fosHjLg&s' }}
+          source={{ uri: parsedUser.photo || parsedUser.photoUrl || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwdIVSqaMsmZyDbr9mDPk06Nss404fosHjLg&s' }}
           style={styles.profileImage}
         />}
 
@@ -151,8 +193,10 @@ const UserDetails = () => {
           }}
         />
         <CustomButton containerStyles={{ marginTop: 10 }}
-          title="Update User" handlePress={handleUpdate} />
+          title={submiting ? 'updating...⚽' :"update user"} handlePress={handleUpdate} />
       </View>
+      </ScrollView>
+     
     </SafeAreaView>
   );
 };

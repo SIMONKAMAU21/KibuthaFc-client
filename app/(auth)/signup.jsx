@@ -55,6 +55,8 @@ const SignUp = () => {
     const { mutateAsync: mutateCreateUser } = useCreateAccount()
 
     const handleCreateAccount = (data) => {
+        setSubmitting(true)
+
         if (!validateForm()) return;
         const payload = {
             name: form.name,
@@ -64,7 +66,6 @@ const SignUp = () => {
             photo: form.photo,
         }
         try {
-            setSubmitting(true)
             mutateCreateUser(payload, {
                 onSuccess: (data) => {
                     console.log(data)

@@ -21,8 +21,9 @@ const handleLogin =(data)=>{
     name:form.name,
     password:form.password
   }
+  setLoading(true)
+
   try {
-    setLoading(true)
 
     mutateLoginUser(payload,{
       onSuccess: async (data) => {
